@@ -4,41 +4,94 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>alphaPhos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23005f73'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/static/style.css">
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
   <header class="topbar">
     <span class="brand">alpha<b>Phos</b></span>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button type="button" class="tab" role="tab" id="tab-data" aria-controls="panel-data"
+              aria-selected="true">Data</button>
+      <button type="button" class="tab" role="tab" id="tab-conditions" aria-controls="panel-conditions"
+              aria-selected="false" tabindex="-1">Conditions</button>
+    </nav>
     <span class="version" id="version"></span>
   </header>
 
   <main>
-    <section class="card" aria-labelledby="load-title">
-      <h2 id="load-title"><span class="step">1</span>Load report</h2>
-      <p class="hint">
-        Paste the path to a Spectronaut report (<code>.tsv</code>, <code>.txt</code> or
-        <code>.parquet</code>). "Copy as path" from Explorer works as-is.
-      </p>
-      <form id="load-form" class="row">
-        <input id="path" type="text" autocomplete="off" spellcheck="false"
-               placeholder="D:\data\report.tsv" aria-label="Report path">
-        <button id="load" type="submit">Load report</button>
-      </form>
-      <p id="status" class="status" role="status" hidden></p>
+    <section id="panel-data" role="tabpanel" aria-labelledby="tab-data">
+      <div class="loaders">
+        <div id="loader-phospho"></div>
+        <div id="loader-proteome"></div>
+      </div>
     </section>
 
-    <section class="card" id="summary" aria-labelledby="summary-title" hidden>
-      <h2 id="summary-title"></h2>
-      <p class="source" id="summary-source"></p>
-      <dl class="stats">
-        <div><dt>Rows read</dt><dd id="rows-loaded"></dd></div>
-        <div><dt>Rows kept after filters</dt><dd id="rows-kept"></dd></div>
-        <div><dt>Runs</dt><dd id="n-runs"></dd></div>
-      </dl>
-      <h3>Runs</h3>
-      <ol class="runs" id="runs"></ol>
+    <section id="panel-conditions" role="tabpanel" aria-labelledby="tab-conditions" hidden>
+      <div class="card">
+        <h2>Conditions</h2>
+        <p class="hint">
+          The condition builder (sample table, plate layout, export) moves here next. Its run
+          names will come from the reports loaded on the Data tab.
+        </p>
+      </div>
     </section>
   </main>
+
+  <!-- One loader: a load card and, once a report is in, its summary card. -->
+  <template id="loader-template">
+    <div class="loader">
+      <section class="card">
+        <h2><span class="step" data-field="step"></span><span data-field="title"></span>
+          <span class="optional" data-field="optional" hidden>optional</span></h2>
+        <p class="hint" data-field="hint"></p>
+        <form class="row" data-field="form">
+          <input type="text" autocomplete="off" spellcheck="false" data-field="path">
+          <button type="submit" data-field="load">Load report</button>
+        </form>
+        <div class="feedback">
+          <div class="progress" data-field="progress" hidden>
+            <div class="progress-track" data-field="track" role="progressbar"
+                 aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" data-field="bar"></div>
+            </div>
+            <span class="progress-label" data-field="progress-label"></span>
+          </div>
+          <p class="status" role="status" data-field="status" hidden></p>
+        </div>
+      </section>
+
+      <section class="card" data-field="summary" hidden>
+        <h2 data-field="name"></h2>
+        <p class="source" data-field="source"></p>
+        <dl class="stats">
+          <div><dt data-field="loaded-label"></dt><dd data-field="n-loaded"></dd></div>
+          <div><dt data-field="kept-label"></dt><dd data-field="n-kept"></dd></div>
+          <div><dt>Runs</dt><dd data-field="n-runs"></dd></div>
+        </dl>
+
+        <div class="actions">
+          <button type="button" class="secondary" data-field="toggle-runs"
+                  aria-expanded="false">See all runs</button>
+          <button type="button" class="secondary" data-field="check-contaminants">Check contaminants</button>
+        </div>
+
+        <div class="runs-panel" data-field="runs-panel" hidden>
+          <ol class="runs" data-field="runs"></ol>
+        </div>
+
+        <div class="panel" data-field="contaminants-panel" hidden>
+          <div class="panel-head">
+            <h3>Contaminants</h3>
+            <button type="button" class="icon" data-field="close-contaminants"
+                    aria-label="Close contaminant plot" title="Close">&times;</button>
+          </div>
+          <p class="hint" data-field="contaminants-hint"></p>
+          <div class="plot-frame"><div data-field="contaminants-plot"></div></div>
+        </div>
+      </section>
+    </div>
+  </template>
 </body>
 </html>

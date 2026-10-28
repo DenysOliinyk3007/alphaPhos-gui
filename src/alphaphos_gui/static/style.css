@@ -41,25 +41,85 @@ body {
 
 .topbar {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 14px 24px;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
-.brand { font-size: 20px; letter-spacing: 0.2px; }
+.brand { font-size: 20px; letter-spacing: 0.2px; padding: 14px 0; }
 .brand b { color: var(--accent); }
-.version { color: var(--muted); font-size: 13px; }
+.version { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+/* ---- tabs ---- */
+.tabs { display: flex; gap: 4px; align-self: stretch; }
+.tab {
+  padding: 0 14px;
+  border-radius: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+}
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+[role="tabpanel"][hidden] { display: none; }
 
 main {
-  max-width: 960px;
+  max-width: 1500px;
   margin: 24px auto;
   padding: 0 16px;
+}
+
+/* ---- loaders: side by side when there is room, stacked otherwise ---- */
+.loaders {
   display: grid;
   gap: 16px;
+  align-items: start;
+}
+@media (min-width: 1100px) {
+  /* Side by side, the two loaders share five rows -- title, hint, form,
+     progress/status, summary -- through subgrids, so both load cards end at
+     the same height and both path fields sit on the same line whichever hint
+     wraps or whichever card is showing a message. */
+  .loaders {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(5, auto);
+    column-gap: 16px;
+    row-gap: 0;
+  }
+  .loaders > div,
+  .loader {
+    grid-row: span 5;
+    display: grid;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+  .loader > .card:first-child {
+    grid-row: span 4;
+    display: grid;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+  .loader > [data-field="summary"] { margin-top: 16px; }
+}
+/* Both are grid items, so both need min-width: 0 for wide plots to scroll
+   inside their card instead of stretching the column. */
+.loaders > div, .loader { min-width: 0; }
+.loader { display: grid; gap: 16px; }
+.optional {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .card {
+  /* Grid items default to their content's width; without this a wide figure
+     would stretch the card instead of scrolling inside it. */
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -121,11 +181,15 @@ button:disabled { opacity: 0.6; cursor: progress; }
 .status[data-kind="warn"] { color: var(--warn); }
 .status[data-kind="busy"] { color: var(--muted); }
 
+/* One line in both columns, whatever the path length, so the two summary
+   cards stay aligned; the full path is in the title (hover). */
 .source {
   margin: 0;
   color: var(--muted);
   font: 13px var(--mono);
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stats {
@@ -143,8 +207,105 @@ button:disabled { opacity: 0.6; cursor: progress; }
 .stats dd { margin: 2px 0 0; font-size: 22px; font-variant-numeric: tabular-nums; }
 
 .runs {
-  margin: 0;
+  margin: 16px 0 0;
   padding-left: 22px;
   font: 13px/1.7 var(--mono);
   overflow-wrap: anywhere;
 }
+.runs-panel[hidden], .panel[hidden], .progress[hidden], .optional[hidden] { display: none; }
+
+/* ---- progress ---- */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+.progress-track {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  width: 0;
+  border-radius: 4px;
+  background: var(--accent);
+  transition: width 0.15s linear;
+}
+/* A stage that cannot measure itself: a block sliding across the track. */
+.progress-track.indeterminate .progress-bar {
+  position: absolute;
+  width: 30%;
+  transition: none;
+  animation: slide 1.1s ease-in-out infinite;
+}
+@keyframes slide {
+  from { left: -30%; }
+  to { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-track.indeterminate .progress-bar { animation: none; left: 0; width: 100%; opacity: 0.5; }
+}
+.progress-label {
+  min-width: 220px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- actions under the stats ---- */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+button.secondary:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+button.secondary[aria-pressed="true"],
+button.secondary[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* ---- plot panel ---- */
+.panel {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-head h3 { margin: 0; color: var(--text); font-size: 15px; }
+.panel .hint { margin: 4px 0 12px; }
+button.icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+}
+button.icon:hover { background: var(--bg); color: var(--text); }
+/* The figure is drawn at the frame's width (responsive), so it never
+   overflows the card.  The white frame matches the figure's white
+   background in both themes. */
+.plot-frame {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.plot-frame > div { width: 100%; }
