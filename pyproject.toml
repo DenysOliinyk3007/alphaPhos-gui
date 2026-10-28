@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "alphaphos-gui"
+dynamic = ["version"]
+description = "Local browser GUI for alphaPhos phosphoproteomics analysis (HTML/CSS/JS front end, FastAPI server)."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Oliinyk", email = "oliinyk@biochem.mpg.de" },
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    # alphaPhos is not on PyPI yet; track its main branch.
+    "alphaPhos[viz] @ git+https://github.com/DenysOliinyk3007/alphaPhos.git",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6",
+    "pytest>=8.0",
+    "httpx>=0.27",  # FastAPI TestClient
+]
+
+[project.scripts]
+alphaphos-gui = "alphaphos_gui.__main__:main"
+
+[tool.hatch.version]
+path = "src/alphaphos_gui/_version.py"
+
+[tool.hatch.metadata]
+# Needed for the git URL dependency on alphaPhos.
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alphaphos_gui"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
