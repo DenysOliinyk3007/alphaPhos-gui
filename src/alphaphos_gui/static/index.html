@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>alphaPhos</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">alpha<b>Phos</b></span>
+    <span class="version" id="version"></span>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="load-title">
+      <h2 id="load-title"><span class="step">1</span>Load report</h2>
+      <p class="hint">
+        Paste the path to a Spectronaut report (<code>.tsv</code>, <code>.txt</code> or
+        <code>.parquet</code>). "Copy as path" from Explorer works as-is.
+      </p>
+      <form id="load-form" class="row">
+        <input id="path" type="text" autocomplete="off" spellcheck="false"
+               placeholder="D:\data\report.tsv" aria-label="Report path">
+        <button id="load" type="submit">Load report</button>
+      </form>
+      <p id="status" class="status" role="status" hidden></p>
+    </section>
+
+    <section class="card" id="summary" aria-labelledby="summary-title" hidden>
+      <h2 id="summary-title"></h2>
+      <p class="source" id="summary-source"></p>
+      <dl class="stats">
+        <div><dt>Rows read</dt><dd id="rows-loaded"></dd></div>
+        <div><dt>Rows kept after filters</dt><dd id="rows-kept"></dd></div>
+        <div><dt>Runs</dt><dd id="n-runs"></dd></div>
+      </dl>
+      <h3>Runs</h3>
+      <ol class="runs" id="runs"></ol>
+    </section>
+  </main>
+</body>
+</html>
